@@ -52,7 +52,6 @@ for date in range(1,366):
     response = requests.get(link).text
 
     df = pd.read_json(response)
-    df
     dfClean = df.drop(['EXR', 'EUR_per_kWh'], axis=1)
 
 dfClean.plot()
