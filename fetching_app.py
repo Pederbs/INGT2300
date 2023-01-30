@@ -40,8 +40,8 @@ fileLocation = "/home/peder/GitHub/INGT2300/" + fileName
 
 # Bruker input
 priceArea = "NO1"
-date = 30
-month = 3
+date = 5
+month = 4
 year = 2022
 
 #fetching data for a year
