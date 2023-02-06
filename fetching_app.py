@@ -2,8 +2,13 @@ import requests
 import pandas as pd
 import matplotlib.pyplot as plt
 
+# Ittererer dagene og sjekker om det er nødvendig å bytte måned
 def checkMonth(cDate, cMonth):
-    if ((cDate == 30) and (cMonth in evenMonth)):
+    if ((cDate == 30) and (cMonth in oddMonth)):
+        cDate = 1
+        cMonth = cMonth + 1
+        return cDate, cMonth
+    elif ((cDate == 31) and (cMonth in evenMonth)):
         cDate = 1
         cMonth = cMonth + 1
         return cDate, cMonth
@@ -11,14 +16,11 @@ def checkMonth(cDate, cMonth):
         cDate = 1
         cMonth = cMonth + 1
         return cDate, cMonth
-    elif ((cDate == 31) and (cMonth in oddMonth)):
-        cDate = 1
-        cMonth = cMonth + 1
-        return cDate, cMonth
     else:
         cDate = cDate + 1
         return cDate, cMonth
 
+# Gjør nummerene til ord så de kan bli brukt i API'en
 def makeStr(number):
     str_number = str(number)
     if len(str_number) < 2:
@@ -84,8 +86,12 @@ normalConsumptionWBatteryPercent = [   0.041666667,
                                 0.041666667,
                                 ]
 
+normalConsumptionWECarPercent = []
+normalConsumptionWBatteryWECarPercent = []
+
+normalconsumtionWRenewableEnergyPersent = []
 #https://norgesnett.no/kunde/ny-nettleie/priser-ny-nettleie/
-kapasitetsLedd = [  168.75,
+capacityLinkList = [168.75,
                     281.25,
                     462.50,
                     822.50,
@@ -97,20 +103,27 @@ kapasitetsLedd = [  168.75,
                     7252.50]
 
 # Beskriver hvor .CSV filen skal lagres
-# Denne må byttes om du ikke heter Peder og bruker linux
+# Denne må byttes om du ikke heter Peder og booter fra linux
 fileName = "strom.csv"
 fileLocation = "/home/peder/GitHub/INGT2300/" + fileName
 
 # Bruker input
-priceArea = "NO1"
 date = 27
 month = 3
 year = 2022
-weeklyConsumption = 72.7
+
+priceArea = "NO1"
+yearlyConsumption = 72*365
+capacityLink = 1
+carChargerPower = None
+# Legge inn en noe som estimerer hvor mye en sparer på fornybar delen ved å: trekke fra 80% av spotpris og få ned kjøpt kw?
+# Litt usikker på implementeringen
+renewableEnergy = None
 
 # Beregner konstnad basert på forbruk
-normalConsumption = [i * weeklyConsumption for i in normalConsumptionPercent]
-normalConsumptionWBattery = [i * weeklyConsumption for i in normalConsumptionWBatteryPercent]
+normalConsumption = [i * dailyConsumption for i in normalConsumptionPercent]
+normalConsumptionWBattery = [i * dailyConsumption for i in normalConsumptionWBatteryPercent]
+dailyConsumption = yearlyConsumption / 365
 
 #fetching data for a year
 #not accounting for leap year so just fetching 365 days
@@ -125,8 +138,9 @@ for i in range(0,300):
     # Rydder data 
     df = df.drop(['EXR', 'EUR_per_kWh','time_end'], axis=1)
 
-    # Noen ganger gir API'en 23 datapunkter istedenfor de forventede 24,
-    # da legger vi til et siste datapunkt som er snittet av de tidligere datapunktene.
+    # Når nasjonen bytter tidssone blir det kluss fordi vi ikke får de forventede 24 tastene 
+    # Tar da et gjennomsnitt av 23 datapunkt og legger det inn for sommertid
+    # For vinterstid tar vi vekk 3 tast i døgnet
     if len(df.index) < 24:
         missing = 24 - len(df.index)
         avg = df['NOK_per_kWh'].sum()/len(df.index)
@@ -135,14 +149,11 @@ for i in range(0,300):
     elif len(df.index) < 25:
         df.iloc[3]
 
-
     # Legger på kolonner
     df['consumption'] = normalConsumption
     df['consumption_cost'] = df['consumption']*df['NOK_per_kWh']
     df['consumption_with_battery'] = normalConsumptionWBattery
     df['consumption_cost_with_battery'] = df['consumption_with_battery']*df['NOK_per_kWh']
-    #df['savings'] = df['consumption_cost'] - df['consumption_cost_with_battery']
-
 
     # Fjerner øverste beskrivende rad for hver dag men beholder den første
     if flag == 0:
@@ -150,10 +161,8 @@ for i in range(0,300):
         df.to_csv(fileLocation, index=False)
     else:
         df.to_csv(fileLocation, header=False, index=False, mode="a")
-
-
+    # Bytter dag og endrer år om nødvendig
     date, month = checkMonth(date, month)
-
     if month == 13:
         month = 1
         year = year + 1
