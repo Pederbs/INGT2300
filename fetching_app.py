@@ -1,7 +1,6 @@
 import requests
 import pandas as pd
 import matplotlib.pyplot as plt
-import datetime
 
 def checkMonth(cDate, cMonth):
     if ((cDate == 30) and (cMonth in evenMonth)):
@@ -32,6 +31,70 @@ def makeStr(number):
 evenMonth = [4, 6, 9, 11]
 oddMonth = [1, 3, 5, 7, 8, 10, 12]
 flag = 0
+# Liste som beskriver forbruk over dagen
+normalConsumptionPercent = [    0.068775791, 
+                                0.055020633, 
+                                0.056396149, 
+                                0.057771664,
+                                0.05914718,
+                                0.027510316,
+                                0.023383769,
+                                0.024759285,
+                                0.03301238,
+                                0.068775791,
+                                0.057771664,
+                                0.037138927,
+                                0.024759285,
+                                0.031636864,
+                                0.031636864,
+                                0.034387895,
+                                0.020632737,
+                                0.038514443,
+                                0.068775791,
+                                0.03301238,
+                                0.034387895,
+                                0.037138927,
+                                0.034387895,
+                                0.041265475
+                                ]
+
+normalConsumptionWBatteryPercent = [   0.041666667,
+                                0.041666667,
+                                0.041666667,
+                                0.041666667,
+                                0.041666667,
+                                0.041666667,
+                                0.041666667,
+                                0.041666667,
+                                0.041666667,
+                                0.041666667,
+                                0.041666667,
+                                0.041666667,
+                                0.041666667,
+                                0.041666667,
+                                0.041666667,
+                                0.041666667,
+                                0.041666667,
+                                0.041666667,
+                                0.041666667,
+                                0.041666667,
+                                0.041666667,
+                                0.041666667,
+                                0.041666667,
+                                0.041666667,
+                                ]
+
+#https://norgesnett.no/kunde/ny-nettleie/priser-ny-nettleie/
+kapasitetsLedd = [  168.75,
+                    281.25,
+                    462.50,
+                    822.50,
+                    1092.50,
+                    1355.00,
+                    2100.00,
+                    3287.50,
+                    4475.00,
+                    7252.50]
 
 # Beskriver hvor .CSV filen skal lagres
 # Denne må byttes om du ikke heter Peder og bruker linux
@@ -40,9 +103,14 @@ fileLocation = "/home/peder/GitHub/INGT2300/" + fileName
 
 # Bruker input
 priceArea = "NO1"
-date = 5
-month = 4
+date = 27
+month = 3
 year = 2022
+weeklyConsumption = 72.7
+
+# Beregner konstnad basert på forbruk
+normalConsumption = [i * weeklyConsumption for i in normalConsumptionPercent]
+normalConsumptionWBattery = [i * weeklyConsumption for i in normalConsumptionWBatteryPercent]
 
 #fetching data for a year
 #not accounting for leap year so just fetching 365 days
@@ -54,14 +122,34 @@ for i in range(0,300):
     # Henter data
     response = requests.get(link).text
     df = pd.read_json(response)
-    dfClean = df.drop(['EXR', 'EUR_per_kWh','time_end'], axis=1)
+    # Rydder data 
+    df = df.drop(['EXR', 'EUR_per_kWh','time_end'], axis=1)
+
+    # Noen ganger gir API'en 23 datapunkter istedenfor de forventede 24,
+    # da legger vi til et siste datapunkt som er snittet av de tidligere datapunktene.
+    if len(df.index) < 24:
+        missing = 24 - len(df.index)
+        avg = df['NOK_per_kWh'].sum()/len(df.index)
+        for i in range(missing):
+            df.loc[len(df.index)] = [avg, 0]
+    elif len(df.index) < 25:
+        df.iloc[3]
+
+
+    # Legger på kolonner
+    df['consumption'] = normalConsumption
+    df['consumption_cost'] = df['consumption']*df['NOK_per_kWh']
+    df['consumption_with_battery'] = normalConsumptionWBattery
+    df['consumption_cost_with_battery'] = df['consumption_with_battery']*df['NOK_per_kWh']
+    #df['savings'] = df['consumption_cost'] - df['consumption_cost_with_battery']
+
 
     # Fjerner øverste beskrivende rad for hver dag men beholder den første
     if flag == 0:
         flag = 1
-        dfClean.to_csv(fileLocation, index=False)
+        df.to_csv(fileLocation, index=False)
     else:
-        dfClean.to_csv(fileLocation, header=False, index=False, mode="a")
+        df.to_csv(fileLocation, header=False, index=False, mode="a")
 
 
     date, month = checkMonth(date, month)

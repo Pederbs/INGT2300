@@ -1,4 +1,3 @@
-import requests
 import pandas as pd
 import matplotlib.pyplot as plt
 
@@ -8,7 +7,11 @@ fileName = "strom.csv"
 fileLocation = "/home/peder/GitHub/INGT2300/" + fileName
 
 hist = pd.read_csv(fileLocation)
-hist.plot(x='time_start', y='NOK_per_kWh', figsize=(40, 10))
+cost_with_battery = hist['consumption_cost_with_battery'].sum()
+cost_whitout_battery = hist['consumption_cost'].sum()
+spart = cost_whitout_battery - cost_with_battery
+print("Penger spart uten kapasitetsledd: " + str(spart))
+hist.plot(x='time_start', y=['consumption_cost_with_battery','consumption_cost'], figsize=(40, 10))
 
 # Lagring av plottet
 plt.savefig('plot.png',dpi=500)
