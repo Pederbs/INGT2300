@@ -60,7 +60,35 @@ normalConsumptionPercent = [    0.068775791,
                                 0.041265475
                                 ]
 
-normalConsumptionWBatteryPercent = [   0.041666667,
+normalConsumptionWBatteryPercent = [0.096286107,
+                                    0.082530949,
+                                    0.083906465,
+                                    0.085281981,
+                                    0.086657497,
+                                    0.071526823,
+                                    0,
+                                    0,
+                                    0,
+                                    0,
+                                    0.026134801,
+                                    0.067400275,
+                                    0.055020633,
+                                    0.061898212,
+                                    0.061898212,
+                                    0.064649243,
+                                    0.020632737,
+                                    0.013755158,
+                                    0.026134801,
+                                    0,
+                                    0,
+                                    0.027510316,
+                                    0.027510316,
+                                    0.041265475
+
+
+]
+
+normalConsumptionWBatteryPercent2 = [   0.041666667,
                                 0.041666667,
                                 0.041666667,
                                 0.041666667,
@@ -111,8 +139,6 @@ fileLocation = "/home/peder/GitHub/INGT2300/" + fileName
 date = 1
 month = 12
 year = 2021
-# Får problemer ved 1 mai
-# Og                1 juli
 
 priceArea = "NO1"
 yearlyConsumption = 72*365
