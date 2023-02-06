@@ -4,11 +4,11 @@ import matplotlib.pyplot as plt
 
 # Ittererer dagene og sjekker om det er nødvendig å bytte måned
 def checkMonth(cDate, cMonth):
-    if ((cDate == 30) and (cMonth in oddMonth)):
+    if ((cDate == 31) and (cMonth in oddMonth)):
         cDate = 1
         cMonth = cMonth + 1
         return cDate, cMonth
-    elif ((cDate == 31) and (cMonth in evenMonth)):
+    elif ((cDate == 30) and (cMonth in evenMonth)):
         cDate = 1
         cMonth = cMonth + 1
         return cDate, cMonth
@@ -108,26 +108,28 @@ fileName = "strom.csv"
 fileLocation = "/home/peder/GitHub/INGT2300/" + fileName
 
 # Bruker input
-date = 27
-month = 3
-year = 2022
+date = 1
+month = 12
+year = 2021
+# Får problemer ved 1 mai
+# Og                1 juli
 
 priceArea = "NO1"
 yearlyConsumption = 72*365
-capacityLink = 1
+capacityLink = None
 carChargerPower = None
 # Legge inn en noe som estimerer hvor mye en sparer på fornybar delen ved å: trekke fra 80% av spotpris og få ned kjøpt kw?
 # Litt usikker på implementeringen
 renewableEnergy = None
 
 # Beregner konstnad basert på forbruk
+dailyConsumption = yearlyConsumption / 365
 normalConsumption = [i * dailyConsumption for i in normalConsumptionPercent]
 normalConsumptionWBattery = [i * dailyConsumption for i in normalConsumptionWBatteryPercent]
-dailyConsumption = yearlyConsumption / 365
 
 #fetching data for a year
 #not accounting for leap year so just fetching 365 days
-for i in range(0,300):
+for i in range(0,432):
     strDate = makeStr(date)
     strMonth = makeStr(month)
     # Bygger link for å hente data
@@ -146,8 +148,9 @@ for i in range(0,300):
         avg = df['NOK_per_kWh'].sum()/len(df.index)
         for i in range(missing):
             df.loc[len(df.index)] = [avg, 0]
-    elif len(df.index) < 25:
-        df.iloc[3]
+    elif len(df.index) == 25:
+       #df = df.iloc[3]
+       df.drop(3, axis=0, inplace=True)
 
     # Legger på kolonner
     df['consumption'] = normalConsumption
