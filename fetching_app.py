@@ -2,7 +2,7 @@ import requests
 import pandas as pd
 import matplotlib.pyplot as plt
 
-# Ittererer dagene og sjekker om det er nødvendig å bytte måned
+# Itererer dagene og sjekker om det er nødvendig å bytte måned
 def checkMonth(cDate, cMonth):
     if ((cDate == 31) and (cMonth in oddMonth)):
         cDate = 1
@@ -29,10 +29,51 @@ def makeStr(number):
     else:
         return str(str_number)
 
+def getElapsedMonths(startMonth, startYear, month, year):
+    elapsedMonths = 0
+    elapsedMonths += (year - startYear) * 12
+    elapsedMonths += month - startMonth
+    return elapsedMonths
+
+def getCapacityLink(maxCapacity):
+    value= 0
+    if maxCapacity < 2:
+        value= 1
+    elif maxCapacity >= 2 and maxCapacity < 5:
+        value= 2
+    elif maxCapacity >= 5 and maxCapacity < 10:
+        value= 3
+    elif maxCapacity >= 10 and maxCapacity < 15:
+        value= 4
+    elif maxCapacity >= 15 and maxCapacity < 20:
+        value= 5
+    elif maxCapacity >= 20 and maxCapacity < 25:
+        value= 6
+    elif maxCapacity >= 25 and maxCapacity < 50:
+        value= 7
+    elif maxCapacity >= 50 and maxCapacity < 75:
+        value= 8
+    elif maxCapacity >= 75 and maxCapacity < 100:
+        value= 9
+    elif maxCapacity >= 100:
+        value= 10
+    index = value- 1
+    return index
+
+def findCapacityPrice(consumptionList, capacityList):
+    capacity = 0
+    for j in consumptionList:
+        if j > capacity:
+            capacity = j
+    newLink = getCapacityLink(capacity)
+    newPrice = capacityList[newLink]
+    return newPrice
+
 # Verdier og konstanter for programmet
 evenMonth = [4, 6, 9, 11]
 oddMonth = [1, 3, 5, 7, 8, 10, 12]
 flag = 0
+
 # Liste som beskriver forbruk over dagen
 normalConsumptionPercent = [    0.068775791, 
                                 0.055020633, 
@@ -60,64 +101,61 @@ normalConsumptionPercent = [    0.068775791,
                                 0.041265475
                                 ]
 
-normalConsumptionWBatteryPercent = [0.096286107,
-                                    0.082530949,
-                                    0.083906465,
-                                    0.085281981,
-                                    0.086657497,
-                                    0.071526823,
-                                    0,
-                                    0,
-                                    0,
-                                    0,
-                                    0.026134801,
-                                    0.067400275,
-                                    0.055020633,
-                                    0.061898212,
-                                    0.061898212,
-                                    0.064649243,
-                                    0.020632737,
-                                    0.013755158,
-                                    0.026134801,
-                                    0,
-                                    0,
-                                    0.027510316,
-                                    0.027510316,
-                                    0.041265475
-
-
+normalConsumptionWBatteryPercent = [0.06232687,
+                                    0.06232687,
+                                    0.06232687,
+                                    0.06232687,
+                                    0.06232687,
+                                    0.06232687,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.009695291,
+                                    0.06232687,
+                                    0.06232687,
+                                    0.06232687,
+                                    0.06232687,
+                                    0.06232687,
+                                    0.041551247,
+                                    0.041551247,
+                                    0.027700831,
+                                    0.013850416,
+                                    0.013850416,
+                                    0.055401662,
+                                    0.055401662,
+                                    0.06232687
 ]
 
-normalConsumptionWBatteryPercent2 = [   0.041666667,
-                                0.041666667,
-                                0.041666667,
-                                0.041666667,
-                                0.041666667,
-                                0.041666667,
-                                0.041666667,
-                                0.041666667,
-                                0.041666667,
-                                0.041666667,
-                                0.041666667,
-                                0.041666667,
-                                0.041666667,
-                                0.041666667,
-                                0.041666667,
-                                0.041666667,
-                                0.041666667,
-                                0.041666667,
-                                0.041666667,
-                                0.041666667,
-                                0.041666667,
-                                0.041666667,
-                                0.041666667,
-                                0.041666667,
-                                ]
+"""
+normalConsumptionWCarPercent = [   0.101936799,
+                                    0.101936799,
+                                    0.101936799,
+                                    0.101936799,
+                                    0.101936799,
+                                    0.017329256,
+                                    0.018348624,
+                                    0.024464832,
+                                    0.0509684,
+                                    0.042813456,
+                                    0.027522936,
+                                    0.018348624,
+                                    0.023445464,
+                                    0.023445464,
+                                    0.0254842,
+                                    0.01529052,
+                                    0.028542304,
+                                    0.0509684,
+                                    0.024464832,
+                                    0.0254842,
+                                    0.027522936,
+                                    0.0254842,
+                                    0.03058104
+]
 
-normalConsumptionWECarPercent = []
 normalConsumptionWBatteryWECarPercent = []
+"""
 
-normalconsumtionWRenewableEnergyPersent = []
 #https://norgesnett.no/kunde/ny-nettleie/priser-ny-nettleie/
 capacityLinkList = [168.75,
                     281.25,
@@ -135,27 +173,78 @@ capacityLinkList = [168.75,
 fileName = "strom.csv"
 fileLocation = "/home/peder/GitHub/INGT2300/" + fileName
 
+
 # Bruker input
-date = 1
-month = 12
-year = 2021
+startDate = 1
+startMonth = 12
+startYear = 2021
 
 priceArea = "NO1"
 yearlyConsumption = 72*365
-capacityLink = None
-carChargerPower = None
-# Legge inn en noe som estimerer hvor mye en sparer på fornybar delen ved å: trekke fra 80% av spotpris og få ned kjøpt kw?
-# Litt usikker på implementeringen
-renewableEnergy = None
+capacityLink = 5
+carCharger = False
+renewableEnergy = False
+carDistance = 15000
+antallPanel= 20
+days = 365
+#prisProduct = 30000
+
+'''
+# Bruker input
+startDate = 1
+startMonth = 12
+startYear = 2021
+
+priceArea = input("Skriv inn hvilet område i Norge du bor: \n(	NO1 = Øst-Norge, NO2 = Sør-Norge, NO3 = Midt-Norge, NO4 = Nord-Norge, NO5 = Vest-Norge)")
+yearlyConsumption = input("Skriv inn hvor mye kW bruker du iløpet av et år:")
+capacityLink = input("Skriv inn hvilket kapasitetsledd du befinner deg i:")
+carCharger = input("Har du elbil og lader hovedsaklig hjemme? (1 = Ja, 0 = Nei)")
+renewableEnergy = input("Har du fornybare energikilder instalert? (1 = Ja, 0 = Nei)")
+if carCharger:
+    carDistance = input("Hvor langt kjører du iløpet av et år:")
+if renewableEnergy:
+    antallPanel= input("hvor mange solcelle panel har du:")
+days = input("Hvor mane dager vil du simulere?")
+#prisProduct = 30000
+'''
 
 # Beregner konstnad basert på forbruk
+
+# lenke til effektivitetsestimat solceller
+# https://www.nve.no/energi/energisystem/solkraft/#:~:text=Et%20solcelleanlegg%20p%C3%A5%20et%20tak,prosent%20av%20str%C3%B8mforbruket%20til%20boligen.
+
+# Lenke til effektivitetsestimat bil
+# https://www.fjordkraft.no/strom/stromforbruk/elbil/#:~:text=Kj%C3%B8rer%20du%2010.000%20km%20i,dette%20redusere%20str%C3%B8mkostnaden%20enda%20mer.
+effectPrPanel = 850 / 20
+effectPrDistance = 2000 / 10000
+solarEnergy = antallPanel * effectPrPanel
+carEnergy = carDistance * effectPrDistance
+
 dailyConsumption = yearlyConsumption / 365
+dailyConsumptionWSolar = (yearlyConsumption - solarEnergy) / 365
+dailyConsumptionWCar = (yearlyConsumption + carEnergy) / 365
+dailyConsumptionWCarAndSolar = (yearlyConsumption + carEnergy - solarEnergy) / 365
+
 normalConsumption = [i * dailyConsumption for i in normalConsumptionPercent]
 normalConsumptionWBattery = [i * dailyConsumption for i in normalConsumptionWBatteryPercent]
 
+normalConsumptionWSolar = [i * dailyConsumptionWSolar for i in normalConsumptionPercent]
+normalConsumptionWBatteryAndSolar = [i * dailyConsumptionWSolar for i in normalConsumptionWBatteryPercent]
+
+normalConsumptionWCar = [i * dailyConsumptionWCar for i in normalConsumptionPercent]
+normalConsumptionWBatteryAndCar = [i * dailyConsumptionWCar for i in normalConsumptionWBatteryPercent]
+
+normalConsumptionWCarAndSolar = [i * dailyConsumptionWCarAndSolar for i in normalConsumptionPercent]
+normalConsumptionWBatteryAndCarAndSolar = [i * dailyConsumptionWCarAndSolar for i in normalConsumptionWBatteryPercent]
+
+date = startDate
+month = startMonth
+year = startYear
+elapsedMonths = 0
+
 #fetching data for a year
 #not accounting for leap year so just fetching 365 days
-for i in range(0,432):
+for i in range(0,days):
     strDate = makeStr(date)
     strMonth = makeStr(month)
     # Bygger link for å hente data
@@ -175,7 +264,6 @@ for i in range(0,432):
         for i in range(missing):
             df.loc[len(df.index)] = [avg, 0]
     elif len(df.index) == 25:
-       #df = df.iloc[3]
        df.drop(3, axis=0, inplace=True)
 
     # Legger på kolonner
@@ -183,6 +271,21 @@ for i in range(0,432):
     df['consumption_cost'] = df['consumption']*df['NOK_per_kWh']
     df['consumption_with_battery'] = normalConsumptionWBattery
     df['consumption_cost_with_battery'] = df['consumption_with_battery']*df['NOK_per_kWh']
+
+    df['consumption_with_solar'] = normalConsumptionWSolar
+    df['consumption_cost_with_solar'] = df['consumption_with_solar']*df['NOK_per_kWh']
+    df['consumption_with_battery_and_solar'] = normalConsumptionWBatteryAndSolar
+    df['consumption_cost_with_battery_and_solar'] = df['consumption_with_battery_and_solar']*df['NOK_per_kWh']
+
+    df['consumption_with_car'] = normalConsumptionWCar
+    df['consumption_cost_with_car'] = df['consumption_with_car']*df['NOK_per_kWh']
+    df['consumption_with_battery_and_car'] = normalConsumptionWBatteryAndCar
+    df['consumption_cost_with_battery_and_car'] = df['consumption_with_battery_and_car']*df['NOK_per_kWh']
+
+    df['consumption_with_car_and_solar'] = normalConsumptionWCarAndSolar
+    df['consumption_cost_with_car_and_solar'] = df['consumption_with_car_and_solar']*df['NOK_per_kWh']
+    df['consumption_with_battery_and_car_and_solar'] = normalConsumptionWBatteryAndCarAndSolar
+    df['consumption_cost_with_battery_and_car_and_solar'] = df['consumption_with_battery_and_car_and_solar']*df['NOK_per_kWh']
 
     # Fjerner øverste beskrivende rad for hver dag men beholder den første
     if flag == 0:
@@ -195,6 +298,75 @@ for i in range(0,432):
     if month == 13:
         month = 1
         year = year + 1
+
+
+elapsedMonths = getElapsedMonths(startMonth, startYear, month, year)
+
+newCapacityLinkPrice = findCapacityPrice(normalConsumptionWBattery, capacityLinkList)
+newCapacityLinkPriceWSolar = findCapacityPrice(normalConsumptionWBatteryAndSolar, capacityLinkList)
+newCapacityLinkPriceWCar = findCapacityPrice(normalConsumptionWBatteryAndCar, capacityLinkList)
+newCapacityLinkPriceWCarAndSolar = findCapacityPrice(normalConsumptionWBatteryAndCarAndSolar, capacityLinkList)
+
+capacityLinkDiff = elapsedMonths * newCapacityLinkPrice - capacityLinkList[capacityLink-1]
+capacityLinkDiffWSolar = elapsedMonths * newCapacityLinkPriceWSolar - capacityLinkList[capacityLink-1]
+capacityLinkDiffWCar = elapsedMonths * newCapacityLinkPriceWCar - capacityLinkList[capacityLink-1]
+capacityLinkDiffWCarAndSolar = elapsedMonths * newCapacityLinkPriceWCarAndSolar - capacityLinkList[capacityLink-1]
+
+
 hist = pd.read_csv(fileLocation)
-hist.plot(x='time_start', y='NOK_per_kWh')
-plt.show()
+
+cost_with_battery = hist['consumption_cost_with_battery'].sum()
+cost_with_battery_and_solar = hist['consumption_cost_with_battery_and_solar'].sum()
+cost_with_battery_and_car = hist['consumption_cost_with_battery_and_car'].sum()
+cost_with_battery_and_car_and_solar = hist['consumption_cost_with_battery_and_car_and_solar'].sum()
+cost_without_battery = hist['consumption_cost'].sum()
+cost_without_battery_and_solar = hist['consumption_cost_with_solar'].sum()
+cost_without_battery_and_car = hist['consumption_cost_with_car'].sum()
+cost_without_battery_and_car_and_solar = hist['consumption_cost_with_car_and_solar'].sum()
+
+
+saved = cost_without_battery - cost_with_battery 
+saved_solar = cost_without_battery_and_solar - cost_with_battery_and_solar
+saved_car = cost_without_battery_and_car - cost_with_battery_and_car
+saved_car_and_solar = cost_without_battery_and_car_and_solar - cost_with_battery_and_car_and_solar
+total_saved = saved + capacityLinkDiff
+total_saved_solar = saved_solar + capacityLinkDiffWSolar
+total_saved_car = saved_car + capacityLinkDiffWCar
+total_saved_car_and_solar = saved_car_and_solar + capacityLinkDiffWCar
+
+saved_to_solar = cost_without_battery - cost_with_battery_and_solar
+total_saved_to_solar = saved_to_solar + capacityLinkDiffWSolar
+
+print("")
+print("Regnskap uten elbil eller solenergi")
+print("Penger spart uten kapasitetsledd: " + str(round(saved, 2)))
+print("Penger spart i kapasitetsledd:    " + str(round(capacityLinkDiff, 2)))
+print("Totalt spart gjennom perioden:    " + str(round(total_saved, 2)))
+
+print("")
+print("Regnskap med solenergi")
+print("Penger spart uten kapasitetsledd: " + str(round(saved_solar, 2)))
+print("Penger spart i kapasitetsledd:    " + str(round(capacityLinkDiffWSolar, 2)))
+print("Totalt spart gjennom perioden:    " + str(round(total_saved_solar, 2)))
+
+print("")
+print("Regnskap med elbil")
+print("Penger spart uten kapasitetsledd: " + str(round(saved_car, 2)))
+print("Penger spart i kapasitetsledd:    " + str(round(capacityLinkDiffWCar, 2)))
+print("Totalt spart gjennom perioden:    " + str(round(total_saved_car, 2)))
+
+print("")
+print("Regnskap med elbil og solceller")
+print("Penger spart uten kapasitetsledd: " + str(round(saved_car_and_solar, 2)))
+print("Penger spart i kapasitetsledd:    " + str(round(capacityLinkDiffWCarAndSolar, 2)))
+print("Totalt spart gjennom perioden:    " + str(round(total_saved_car_and_solar, 2)))
+
+'''
+print("")
+print("Regnskap uten solenergi --> med solenergi")
+print("Penger spart uten kapasitetsledd: " + str(round(saved_to_solar, 2)))
+print("Penger spart i kapasitetsledd:    " + str(round(capacityLinkDiff, 2)))
+print("Totalt spart gjennom perioden:    " + str(round(total_saved_to_solar, 2)))
+'''
+#hist.plot(x='time_start', y='NOK_per_kWh')
+#plt.show()
