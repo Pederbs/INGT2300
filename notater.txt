@@ -1,0 +1,7 @@
+vedlegg for python app:
+	skrive generelt om det
+	skrive at det er litt cherrypicket
+	
+
+oppdatere figur om python app i dokumentet:
+	må gjøre
