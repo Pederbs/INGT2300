@@ -84,9 +84,11 @@ capacityLinkList = [                168.75, 281.25,
                                     2100.00, 3287.50,
                                     4475.00, 7252.50]
 
+# Lager liste for hele perioden
 normalYearlyConsumption = []
 normalYearlyConsumptionWB = []
 
+# Leser data fra csv til dataframe
 fileName = "strom2022.csv"
 df = pd.read_csv(fileName)
 
@@ -106,14 +108,15 @@ normalConsumptionWB = [i * dailyConsumption for i in normalConsumptionWBPercent]
 startDate = 1
 startMonth = 1
 startYear = 2022
-days = 365
+loggedDays = int(len(df.index)/24)
 
 date = startDate
 month = startMonth
 year = startYear
 elapsedMonths = 0
 
-for i in range(0,days):
+
+for i in range(0,loggedDays):
     normalYearlyConsumption.extend(normalConsumption)
     normalYearlyConsumptionWB.extend(normalConsumptionWB)
 
