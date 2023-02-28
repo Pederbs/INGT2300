@@ -307,10 +307,10 @@ newCapacityLinkPriceWSolar = findCapacityPrice(normalConsumptionWBatteryAndSolar
 newCapacityLinkPriceWCar = findCapacityPrice(normalConsumptionWBatteryAndCar, capacityLinkList)
 newCapacityLinkPriceWCarAndSolar = findCapacityPrice(normalConsumptionWBatteryAndCarAndSolar, capacityLinkList)
 
-capacityLinkDiff = elapsedMonths * newCapacityLinkPrice - capacityLinkList[capacityLink-1]
-capacityLinkDiffWSolar = elapsedMonths * newCapacityLinkPriceWSolar - capacityLinkList[capacityLink-1]
-capacityLinkDiffWCar = elapsedMonths * newCapacityLinkPriceWCar - capacityLinkList[capacityLink-1]
-capacityLinkDiffWCarAndSolar = elapsedMonths * newCapacityLinkPriceWCarAndSolar - capacityLinkList[capacityLink-1]
+capacityLinkDiff = elapsedMonths * (newCapacityLinkPrice - capacityLinkList[capacityLink-1])
+capacityLinkDiffWSolar = elapsedMonths * (newCapacityLinkPriceWSolar - capacityLinkList[capacityLink-1])
+capacityLinkDiffWCar = elapsedMonths * (newCapacityLinkPriceWCar - capacityLinkList[capacityLink-1])
+capacityLinkDiffWCarAndSolar = elapsedMonths * (newCapacityLinkPriceWCarAndSolar - capacityLinkList[capacityLink-1])
 
 
 hist = pd.read_csv(fileLocation)
