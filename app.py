@@ -70,7 +70,7 @@ normalConsumptionPercent = [        0.068775791, 0.055020633, 0.056396149, 0.057
                                     0.034387895,0.037138927,0.034387895,0.041265475 ]
 
 # Liste som beskriver forbruk over dagen per time med Energy buff sin batteripakke
-normalConsumptionWBPercent = [0.06232687, 0.06232687, 0.06232687, 0.06232687,
+normalConsumptionWBPercent = [      0.06232687, 0.06232687, 0.06232687, 0.06232687,
                                     0.06232687, 0.06232687, 0.0, 0.0,
                                     0.0, 0.0, 0.009695291, 0.06232687,
                                     0.06232687, 0.06232687, 0.06232687, 0.06232687,
